@@ -7,7 +7,7 @@
 
 struct Matrix {
 
-  // proxy-class for [][] implemtation
+  // proxy-class for [][] implemetation
   struct Row {
     private:  
       int* memstart;
@@ -30,11 +30,10 @@ struct Matrix {
     int* matmem;
     Matrix::Row* rows;
 
-  public:
-
     int rowsnum;
     int colsnum;
 
+  public:
     Matrix(int x, int y) {
       this->rowsnum = x;
       this->colsnum = y;
