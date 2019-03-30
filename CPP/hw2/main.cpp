@@ -100,7 +100,7 @@ private:
     } while (!endoflex);
   }
 
-  void error(void) {
+  void error() {
     throw ErrorProcException();
   }
 
