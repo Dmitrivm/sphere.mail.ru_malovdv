@@ -24,6 +24,12 @@ struct Matrix {
           throw std::out_of_range("Column number is out of range");
         return *(memstart + colnum);
       }
+
+      const int& operator[](int colnum) const {
+        if (colnum >= this->colsnum)
+          throw std::out_of_range("Column number is out of range");
+        return *(memstart + colnum);
+      }
   };
 
   private:
@@ -54,16 +60,18 @@ struct Matrix {
       delete[] this->matmem;
     }
 
-    Matrix::Row operator[](int rownum) {
+    Matrix::Row& operator[](int rownum) {
       if (rownum >= this->getRows())
         throw std::out_of_range("Row number is out of range");
       return rows[rownum];
     }
 
-    Matrix::Row operator[](int rownum) const {
+    // можно использовать const_cast
+    const Matrix::Row& operator[](int rownum) const {
       if (rownum >= this->getRows())
         throw std::out_of_range("Row number is out of range");
-      return rows[rownum];
+      const Matrix::Row& mr = rows[rownum];
+      return mr;
     }
 
     Matrix& operator*=(const int mult)
