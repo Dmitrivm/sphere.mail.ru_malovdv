@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cstring>
-#include <cassert>
 
 // D.V. Malov
 // Matrix class
@@ -14,10 +13,9 @@ struct Matrix {
       int colsnum;
     
     public:
-      void init(int* m, int cn) {
-        this->memstart = m;
-        this->colsnum = cn;
-      }
+
+      Row() {}
+      Row(int* m, int cn) : memstart(m), colsnum(cn) {} 
 
       int& operator[](int colnum) {
         if (colnum >= this->colsnum)
@@ -51,7 +49,7 @@ struct Matrix {
 
       this->rows = new Matrix::Row[x];
       for (int i = 0; i < x; i++) {
-        this->rows[i].init(&matmem[i * y], y);
+        this->rows[i] = Matrix::Row(&matmem[i * y], y);
       }
     }
 
