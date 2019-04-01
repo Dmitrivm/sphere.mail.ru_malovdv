@@ -14,7 +14,7 @@ std::string ReplaceAll(std::string str, const std::string& from, const std::stri
 
 class ErrorProcException: public std::exception
 {
-  virtual const char* what() const throw()
+  virtual const char* what() noexcept
   {
     return "Processing error";
   }
