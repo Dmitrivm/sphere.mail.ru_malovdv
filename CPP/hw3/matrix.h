@@ -14,7 +14,10 @@ struct Matrix {
     
     public:
 
-      Row() {}
+      Row() { 
+        std::cout << "Default constructor call." << std::endl;
+      }
+      
       Row(int* m, int cn) : memstart(m), colsnum(cn) {} 
 
       int& operator[](int colnum) {
@@ -32,7 +35,7 @@ struct Matrix {
 
   private:
     int* matmem;
-    Matrix::Row* rows;
+    Matrix::Row* membuf;
 
     int rowsnum;
     int colsnum;
@@ -47,28 +50,28 @@ struct Matrix {
         this->matmem[i] = 0;
       }
 
-      this->rows = new Matrix::Row[x];
+      this->membuf = (Matrix::Row*) new char(x * sizeof(Matrix::Row));
       for (int i = 0; i < x; i++) {
-        this->rows[i] = Matrix::Row(&matmem[i * y], y);
+        new (this->membuf + i * sizeof(Matrix::Row)) Matrix::Row(&matmem[i * y], y);
       }
     }
 
     ~Matrix() {
-      delete[] this->rows; 
+      delete this->membuf;
       delete[] this->matmem;
     }
 
     Matrix::Row& operator[](int rownum) {
       if (rownum >= this->getRows())
         throw std::out_of_range("Row number is out of range");
-      return rows[rownum];
+      return *(this->membuf + rownum * sizeof(Matrix::Row));
     }
 
     // можно использовать const_cast
     const Matrix::Row& operator[](int rownum) const {
       if (rownum >= this->getRows())
         throw std::out_of_range("Row number is out of range");
-      const Matrix::Row& mr = rows[rownum];
+      const Matrix::Row& mr = *(this->membuf + rownum * sizeof(Matrix::Row));
       return mr;
     }
 
