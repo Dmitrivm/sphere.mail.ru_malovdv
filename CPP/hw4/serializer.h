@@ -37,7 +37,7 @@ public:
 private:
     // process использует variadic templates
 
-    void print(bool& val) {
+    void print(bool val) {
         std::string s("");
         if (val) 
             s = "true";
@@ -46,12 +46,12 @@ private:
         out_ << s << Separator;
     }
 
-    void print(uint64_t& val) {
+    void print(uint64_t val) {
         out_ << val << Separator;        
     }
 
     template <class T>
-    void process(T& val)
+    void process(T val)
     {
         print(val);
     }
@@ -75,14 +75,14 @@ public:
     }
 
     template <class T>
-    Error load(T&& object)
+    Error load(T& object)
     {
 
         return object.serialize(*this);
     }
 
     template <class... ArgsT>
-    Error operator()(ArgsT... args)
+    Error operator()(ArgsT&&... args)
     {
         return process(args...);
     }
@@ -109,11 +109,9 @@ private:
     {
         std::string text;
         in_ >> text;
-        std::cout << text << std::endl;
 
         try {
             value = std::stoi(text);
-            std::cout << value << std::endl;
         }
         catch (std::invalid_argument& ex) {
             return Error::CorruptedArchive;
@@ -130,7 +128,7 @@ private:
 
 
     template <class T>
-    Error process(T&& val)
+    Error process(T& val)
     {
         return load(val);
     }
