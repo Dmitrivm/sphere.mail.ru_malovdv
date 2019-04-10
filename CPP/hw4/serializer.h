@@ -1,8 +1,5 @@
 #pragma once
 #include <iostream>
-#include <istream>
-#include <cstdlib>
-#include <sstream>
 
 enum class Error
 {
@@ -65,7 +62,6 @@ private:
     }
 };
 
-
 class Deserializer
 {
 public:
@@ -77,7 +73,6 @@ public:
     template <class T>
     Error load(T& object)
     {
-
         return object.serialize(*this);
     }
 
@@ -125,7 +120,6 @@ private:
         }
         return Error::NoError;
     }
-
 
     template <class T>
     Error process(T& val)
