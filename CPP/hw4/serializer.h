@@ -28,13 +28,13 @@ public:
     template <class... ArgsT>
     Error operator()(ArgsT... args)
     {
-        return process(args...);
+        return process(std::forward<ArgsT>(args)...);
     }
     
 private:
     // process использует variadic templates
 
-    void print(bool val) {
+    void print(bool& val) {
         std::string s("");
         if (val) 
             s = "true";
@@ -43,7 +43,7 @@ private:
         out_ << s << Separator;
     }
 
-    void print(uint64_t val) {
+    void print(uint64_t& val) {
         out_ << val << Separator;        
     }
 
@@ -77,15 +77,15 @@ public:
     }
 
     template <class... ArgsT>
-    Error operator()(ArgsT&&... args)
+    Error operator()(ArgsT&... args)
     {
-        return process(args...);
+        return process(std::forward<ArgsT&>(args)...);
     }
     
 private:
     std::istream& in_;
     // process использует variadic templates
-    Error load(bool& value)
+    Error doLoad(bool& value)
     {
         std::string text;
         in_ >> text;
@@ -100,7 +100,7 @@ private:
         return Error::NoError;
     }
 
-    Error load(uint64_t& value)
+    Error doLoad(uint64_t& value)
     {
         std::string text;
         in_ >> text;
@@ -124,15 +124,15 @@ private:
     template <class T>
     Error process(T& val)
     {
-        return load(val);
+        return doLoad(val);
     }
 
     template <class T, class... Args>
-    Error process(T&& val, Args&&... args)
+    Error process(T& val, Args&... args)
     {
-        Error err = load(val);
+        Error err = doLoad(val);
         if (err != Error::NoError)
             return Error::CorruptedArchive; 
-        return process(std::forward<Args>(args)...);
+        return process(std::forward<Args&>(args)...);
     }
 };
