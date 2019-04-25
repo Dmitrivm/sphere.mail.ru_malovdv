@@ -26,40 +26,50 @@ public:
     }
 
     template <class... ArgsT>
-    Error operator()(ArgsT... args)
-    {
+    Error operator()(ArgsT&&... args) {
         return process(std::forward<ArgsT>(args)...);
     }
     
 private:
     // process использует variadic templates
 
-    void print(bool& val) {
+    Error print(bool& val) {
         std::string s("");
         if (val) 
             s = "true";
         else
             s = "false";
-        out_ << s << Separator;
+
+        if (out_ << s << Separator) 
+            return Error::NoError;
+
+        return Error::CorruptedArchive; 
+
     }
 
-    void print(uint64_t& val) {
-        out_ << val << Separator;        
+    Error print(uint64_t& val) {
+        if (out_ << val << Separator) 
+            return Error::NoError;
+
+        return Error::CorruptedArchive;       
     }
 
     template <class T>
-    void process(T val)
+    Error process(T&& val)
     {
-        print(val);
+        return print(val);
     }
 
-    template <class T, class... Args>
-    Error process(T&& val, Args&&... args)
-    {
-        print(val);
-        process(std::forward<Args>(args)...);
-        return Error::NoError;
+
+    template <class T, class... ArgsT>
+    Error process(T&& val, ArgsT&&... args) {
+        if (process(val) == Error::NoError)
+            return process(std::forward<ArgsT>(args)...);
+
+        return Error::CorruptedArchive;
     }
+
+
 };
 
 class Deserializer
@@ -85,6 +95,7 @@ public:
 private:
     std::istream& in_;
     // process использует variadic templates
+
     Error doLoad(bool& value)
     {
         std::string text;
@@ -122,17 +133,17 @@ private:
     }
 
     template <class T>
-    Error process(T& val)
+    Error process(T&& val)
     {
         return doLoad(val);
     }
 
-    template <class T, class... Args>
-    Error process(T& val, Args&... args)
-    {
-        Error err = doLoad(val);
-        if (err != Error::NoError)
-            return Error::CorruptedArchive; 
-        return process(std::forward<Args&>(args)...);
+    template <class T, class... ArgsT>
+    Error process(T&& val, ArgsT&&... args) {
+        if (doLoad(val) == Error::NoError)
+            return process(std::forward<ArgsT>(args)...);
+
+        return Error::CorruptedArchive;
     }
+
 };
