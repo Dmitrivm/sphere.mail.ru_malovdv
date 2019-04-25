@@ -9,7 +9,7 @@
 const size_t LIMIT = 500000;
 
 // mutex wrapper class
-class MutexFactory
+class Semaphore
 {
 
     size_t cnt;
@@ -17,7 +17,7 @@ class MutexFactory
     std::condition_variable cnd;
 
 public:
-    explicit MutexFactory(int initialValue = 1)
+    explicit Semaphore(int initialValue = 1)
         : cnt(initialValue)
     {
     }
@@ -41,12 +41,12 @@ public:
     }
 };
 
-MutexFactory s1, s2(0);
+Semaphore s1, s2(0);
 
 // print function
 void print(const std::string &s) {
     bool isping = (s == std::string("ping"));
-    for (int i = 0; i < LIMIT; i++) {
+    for (size_t i = 0; i < LIMIT; i++) {
         if (isping) {
             s1.enter();
         }
