@@ -43,28 +43,31 @@ public:
 
 MutexFactory s1, s2(0);
 
-// ping
-void print1() {
+// print function
+void print(const std::string &s) {
+    bool isping = (s == std::string("ping"));
     for (int i = 0; i < LIMIT; i++) {
-        s1.enter();
-        std::cout << "ping" << "\n";
-        s2.leave();
-    }
-}
-
-//pong
-void print2() {
-    for (int i = 0; i < LIMIT; i++) {
-        s2.enter();
-        std::cout << "pong" << "\n";
-        s1.leave();
+        if (isping) {
+            s1.enter();
+        }
+        else {
+            s2.enter();
+        }
+        std::cout << s << "\n";
+        if (isping) {
+            s2.leave();
+        }
+        else {
+            s1.leave();
+        }
+        
     }
 }
 
 int main() {
 
     // creating thread instances
-    std::thread thping(print1), thpong(print2);
+    std::thread thping(print, "ping"), thpong(print, "pong");
 
     thping.join();
     thpong.join();
