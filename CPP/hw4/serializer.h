@@ -33,7 +33,7 @@ public:
 private:
     // process использует variadic templates
 
-    Error print(bool& val) {
+    Error print(bool val) {
         std::string s("");
         if (val) 
             s = "true";
@@ -46,7 +46,7 @@ private:
         return Error::CorruptedArchive; 
     }
 
-    Error print(uint64_t& val) {
+    Error print(uint64_t val) {
         if (out_ << val << Separator) 
             return Error::NoError;
 
@@ -117,13 +117,10 @@ private:
         try {
             value = std::stoi(text);
         }
-        catch (std::invalid_argument& ex) {
+        catch (std::logic_error& ex) {
             return Error::CorruptedArchive;
         }
-        catch (std::out_of_range& ex)
-        {
-            return Error::CorruptedArchive;
-        }
+
         if (text[0] == '-') {
             return Error::CorruptedArchive;
         }
