@@ -44,7 +44,6 @@ private:
             return Error::NoError;
 
         return Error::CorruptedArchive; 
-
     }
 
     Error print(uint64_t& val) {
@@ -57,9 +56,8 @@ private:
     template <class T>
     Error process(T&& val)
     {
-        return print(val);
+        return print(std::forward<T>(val));
     }
-
 
     template <class T, class... ArgsT>
     Error process(T&& val, ArgsT&&... args) {
@@ -135,7 +133,7 @@ private:
     template <class T>
     Error process(T&& val)
     {
-        return doLoad(val);
+        return doLoad(std::forward<T>(val));
     }
 
     template <class T, class... ArgsT>
