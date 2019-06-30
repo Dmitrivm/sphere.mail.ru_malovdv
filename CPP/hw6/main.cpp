@@ -99,13 +99,11 @@ static void MergeTwoFiles(uint inid1, uint inid2, uint outid, SafeDeque<int>& id
                 fin2.read(reinterpret_cast<char*>(&v2), sizeof(int));
                 if (existlastitem) {
                     if (lastitem <= v2) {
-                        // fout << lastitem << " ";
                         fout.write(reinterpret_cast<const char*>(&lastitem), sizeof(int));
                         lastitem = v2;
                         continue;
                     }
                     else {
-                        // fout << v2 << " ";
                         fout.write(reinterpret_cast<const char*>(&v2), sizeof(int));
                     }
                 }
@@ -120,13 +118,11 @@ static void MergeTwoFiles(uint inid1, uint inid2, uint outid, SafeDeque<int>& id
                 fin1.read(reinterpret_cast<char*>(&v1), sizeof(int));
                 if (existlastitem) {
                     if (lastitem <= v1) {
-                        // fout << lastitem << " ";
                         fout.write(reinterpret_cast<const char*>(&lastitem), sizeof(int));
                         lastitem = v1;
                         continue;
                     }
                     else {
-                        // fout << v1 << " ";
                         fout.write(reinterpret_cast<const char*>(&v1), sizeof(int));
                     }
                 }
@@ -137,7 +133,6 @@ static void MergeTwoFiles(uint inid1, uint inid2, uint outid, SafeDeque<int>& id
         }
 
         if (v1 < v2) {
-            // fout << v1 << " ";
             fout.write(reinterpret_cast<const char*>(&v1), sizeof(int));
             if (fin1.peek() == EOF) {
                 endof1 = true;
@@ -148,7 +143,6 @@ static void MergeTwoFiles(uint inid1, uint inid2, uint outid, SafeDeque<int>& id
             }
         }
         else {
-            //fout << v2 << " ";
             fout.write(reinterpret_cast<const char*>(&v2), sizeof(int));
             if (fin2.peek() == EOF) {
                 endof2 = true;
@@ -163,7 +157,6 @@ static void MergeTwoFiles(uint inid1, uint inid2, uint outid, SafeDeque<int>& id
 
     if (existlastitem)
         fout.write(reinterpret_cast<const char*>(&lastitem), sizeof(int));
-        // fout << lastitem << " ";
 
     fin1.close();
     fin2.close();
@@ -218,39 +211,7 @@ int main()
     }
 
     if (_DEBUG_MODE > 0) cout << "\n\nidtable size " << idtable.size() << " "; // << " Front element: " << idtable.front() << "\n";
-
-//    // create binary file from text one
-//    fstream filein;
-//    ofstream fileout;
-//    filein.open("input.txt");
-//    fileout.open("input_binary.dat", ios::binary | ios::out);
-//    int val;
-//    while (filein >> val)
-//    {
-//        fileout.write(reinterpret_cast<const char*>(&val), sizeof(int));
-//        cout << val << "\n";
-//    }
-//    filein.close();
-//    fileout.close();
-//    cout << "End of convertation.\n";
-//
-//    // check result file
-//    filein.open("input_binary.dat", ios::binary | ios::in);
-//    while(filein.peek() != EOF)
-//    {
-//        filein.read(reinterpret_cast<char*>(&val), sizeof(int));
-//        cout << val << "\n";
-//    }
-//    filein.close();
-//
-//    // check sorted result file
-//    filein.open("sort364", ios::binary | ios::in);
-//    while(filein.peek() != EOF)
-//    {
-//        filein.read(reinterpret_cast<char*>(&val), sizeof(int));
-//        cout << val << "\n";
-//    }
-//    filein.close();
+    
 
     return 0;
 }
