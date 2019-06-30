@@ -18,7 +18,7 @@ using namespace std;
 
 constexpr uint CHUNK_SIZE = 5;
 constexpr uint MAX_THREADS = 10;
-const std::string INPUT_FILE = "input.txt";
+const std::string INPUT_FILE = "input_binary.dat";
 constexpr uint _DEBUG_MODE = 0;
 
 
@@ -27,7 +27,7 @@ typedef std::vector<int> int_vec_t;
 struct ChunkReader {
     fstream file;
     ChunkReader(string fn) {
-        file.open(fn);
+        file.open(fn, ios::binary | ios::in);
     }
 
     // get next chunk from file
@@ -35,12 +35,11 @@ struct ChunkReader {
     {
         vector<int> vec;
         if (file.good()) {
-            string word;
-
             int cnt = 0;
-            while (file >> word)
+            int num;
+            while (file.peek() != EOF)
             {
-                int num = stoi(word);
+                file.read(reinterpret_cast<char*>(&num), sizeof(int));
                 vec.push_back(num);
                 ++cnt;
 
@@ -56,11 +55,13 @@ struct ChunkReader {
 static void localSort(vector<int> v, int fileid, SafeDeque<int>& idtable) {
     // sort vector
     ofstream outfile;
-    outfile.open (string("sort") + std::to_string(fileid));
+    outfile.open(string("sort") + std::to_string(fileid), ios::binary | ios::out);
+
     std::sort(v.begin(), v.end());
 
     for (auto it=v.begin(); it != v.end(); ++it) {
-        outfile << *it << " ";
+        // outfile << *it << " ";
+        outfile.write(reinterpret_cast<const char*>(&(*it)), sizeof(int));
     }
     outfile.close();
 
@@ -74,15 +75,16 @@ static void MergeTwoFiles(uint inid1, uint inid2, uint outid, SafeDeque<int>& id
 
     string fnin1 = "sort" + std::to_string(inid1);
     string fnin2 = "sort" + std::to_string(inid2);
-    string fnout =  "sort" + std::to_string(outid);
+    string fnout = "sort" + std::to_string(outid);
 
-    fin1.open(fnin1);
-    fin2.open(fnin2);
-    fout.open(fnout);
+    fin1.open(fnin1, ios::binary | ios::in);
+    fin2.open(fnin2, ios::binary | ios::in);
+    fout.open(fnout, ios::binary | ios::out);
 
     int v1, v2;
-    if (!(fin1 >> v1)) throw std::runtime_error("Unexpected. Empty file!");
-    if (!(fin2 >> v2)) throw std::runtime_error("Unexpected. Empty file!");
+    if ((fin1.peek() == EOF) && (fin2.peek() == EOF)) throw std::runtime_error("Unexpected. Empty file!");
+    fin1.read(reinterpret_cast<char*>(&v1), sizeof(int));
+    fin2.read(reinterpret_cast<char*>(&v2), sizeof(int));
 
     bool endof1 = false;
     bool endof2 = false;
@@ -93,15 +95,18 @@ static void MergeTwoFiles(uint inid1, uint inid2, uint outid, SafeDeque<int>& id
     while (!(endof1 && endof2)) {
         if (endof1)
         {
-            if (fin2 >> v2) {
+            if (fin2.peek() != EOF) {
+                fin2.read(reinterpret_cast<char*>(&v2), sizeof(int));
                 if (existlastitem) {
                     if (lastitem <= v2) {
-                        fout << lastitem << " ";
+                        // fout << lastitem << " ";
+                        fout.write(reinterpret_cast<const char*>(&lastitem), sizeof(int));
                         lastitem = v2;
                         continue;
                     }
                     else {
-                        fout << v2 << " ";
+                        // fout << v2 << " ";
+                        fout.write(reinterpret_cast<const char*>(&v2), sizeof(int));
                     }
                 }
             } else
@@ -111,18 +116,20 @@ static void MergeTwoFiles(uint inid1, uint inid2, uint outid, SafeDeque<int>& id
             continue;
         }
         if (endof2) {
-            if (fin1 >> v1) {
+            if (fin1.peek() != EOF) {
+                fin1.read(reinterpret_cast<char*>(&v1), sizeof(int));
                 if (existlastitem) {
                     if (lastitem <= v1) {
-                        fout << lastitem << " ";
+                        // fout << lastitem << " ";
+                        fout.write(reinterpret_cast<const char*>(&lastitem), sizeof(int));
                         lastitem = v1;
                         continue;
                     }
                     else {
-                        fout << v1 << " ";
+                        // fout << v1 << " ";
+                        fout.write(reinterpret_cast<const char*>(&v1), sizeof(int));
                     }
                 }
-
             } else {
                 endof1 = true;
             }
@@ -130,25 +137,33 @@ static void MergeTwoFiles(uint inid1, uint inid2, uint outid, SafeDeque<int>& id
         }
 
         if (v1 < v2) {
-            fout << v1 << " ";
-            if (!(fin1 >> v1)) {
+            // fout << v1 << " ";
+            fout.write(reinterpret_cast<const char*>(&v1), sizeof(int));
+            if (fin1.peek() == EOF) {
                 endof1 = true;
                 existlastitem = true;
                 lastitem = v2;
+            } else {
+                fin1.read(reinterpret_cast<char*>(&v1), sizeof(int));
             }
         }
         else {
-            fout << v2 << " ";
-            if (!(fin2 >> v2)) {
+            //fout << v2 << " ";
+            fout.write(reinterpret_cast<const char*>(&v2), sizeof(int));
+            if (fin2.peek() == EOF) {
                 endof2 = true;
                 existlastitem = true;
                 lastitem = v1;
+            }
+            else {
+                fin2.read(reinterpret_cast<char*>(&v2), sizeof(int));
             }
         }
     }
 
     if (existlastitem)
-        fout << lastitem << " ";
+        fout.write(reinterpret_cast<const char*>(&lastitem), sizeof(int));
+        // fout << lastitem << " ";
 
     fin1.close();
     fin2.close();
@@ -185,19 +200,57 @@ int main()
 
     if (_DEBUG_MODE > 0) cout << "\n\nidtable size " << idtable.size() << "\n";
 
-    while (idtable.size() > 1) {
-        uint id1 = idtable.front();
-        idtable.pop_front();
-        uint id2 = idtable.front();
-        idtable.pop_front();
+    try {
+        while (idtable.size() > 1) {
+            uint id1 = idtable.front();
+            idtable.pop_front();
+            uint id2 = idtable.front();
+            idtable.pop_front();
 
-        cout << id1 << " + " << id2 << " " <<  " > " << idcounter << "\n";
+            cout << id1 << " + " << id2 << " " << " > " << idcounter << "\n";
 
-        MergeTwoFiles(id1, id2, idcounter, std::ref(idtable));
-        ++idcounter;
+            MergeTwoFiles(id1, id2, idcounter, std::ref(idtable));
+            ++idcounter;
+        }
+    }
+    catch (std::runtime_error& ex) {
+        cout << "Merge error! " << ex.what() << "\n";
     }
 
     if (_DEBUG_MODE > 0) cout << "\n\nidtable size " << idtable.size() << " "; // << " Front element: " << idtable.front() << "\n";
+
+//    // create binary file from text one
+//    fstream filein;
+//    ofstream fileout;
+//    filein.open("input.txt");
+//    fileout.open("input_binary.dat", ios::binary | ios::out);
+//    int val;
+//    while (filein >> val)
+//    {
+//        fileout.write(reinterpret_cast<const char*>(&val), sizeof(int));
+//        cout << val << "\n";
+//    }
+//    filein.close();
+//    fileout.close();
+//    cout << "End of convertation.\n";
+//
+//    // check result file
+//    filein.open("input_binary.dat", ios::binary | ios::in);
+//    while(filein.peek() != EOF)
+//    {
+//        filein.read(reinterpret_cast<char*>(&val), sizeof(int));
+//        cout << val << "\n";
+//    }
+//    filein.close();
+//
+//    // check sorted result file
+//    filein.open("sort364", ios::binary | ios::in);
+//    while(filein.peek() != EOF)
+//    {
+//        filein.read(reinterpret_cast<char*>(&val), sizeof(int));
+//        cout << val << "\n";
+//    }
+//    filein.close();
 
     return 0;
 }
